@@ -21,7 +21,11 @@ export const Leaderboard = () => {
   const [rankings, setRankings] = useState(() => {
     try {
       const saved = sessionStorage.getItem('rpg_leaderboard_Weekly');
-      return saved ? JSON.parse(saved) : [];
+      if (!saved) return [];
+      const parsed = JSON.parse(saved);
+      return Array.isArray(parsed) 
+        ? parsed.filter(p => !p.username?.toLowerCase().includes('cyberrunner') && !p.id?.startsWith('demo-'))
+        : [];
     } catch {
       return [];
     }
@@ -49,7 +53,8 @@ export const Leaderboard = () => {
       const data = await res.json();
       if (data.success && Array.isArray(data.rankings)) {
         const currentUserId = user?.id;
-        const normalized = data.rankings.map(r => ({
+        const cleanRankings = data.rankings.filter(r => !r.username?.toLowerCase().includes('cyberrunner') && !r.id?.startsWith('demo-'));
+        const normalized = cleanRankings.map(r => ({
           ...r,
           isYou: r.id === currentUserId || (profile && r.username === profile.username)
         }));
@@ -87,9 +92,12 @@ export const Leaderboard = () => {
         const saved = sessionStorage.getItem('rpg_leaderboard_' + newPeriod);
         if (saved) {
           const parsed = JSON.parse(saved);
-          cacheRef.current[newPeriod] = parsed;
-          setRankings(parsed);
-          setLoading(false);
+          const clean = Array.isArray(parsed)
+            ? parsed.filter(p => !p.username?.toLowerCase().includes('cyberrunner') && !p.id?.startsWith('demo-'))
+            : [];
+          cacheRef.current[newPeriod] = clean;
+          setRankings(clean);
+          setLoading(clean.length === 0);
         } else {
           setLoading(true);
         }

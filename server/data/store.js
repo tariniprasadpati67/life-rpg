@@ -7,25 +7,108 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DATA_FILE = path.join(__dirname, 'local_db.json');
 
-// Default initial state
+// Default initial state with real registered players
 const defaultState = {
   profiles: {
-    'demo-user-123': {
-      id: 'demo-user-123',
-      username: 'CyberRunner',
-      display_name: 'Cyber Runner',
-      avatar_url: 'cyber-avatar-1',
-      current_xp: 350,
+    'bc1998a3-19f6-406d-9686-e039eb7a46af': {
+      id: 'bc1998a3-19f6-406d-9686-e039eb7a46af',
+      username: 'tarini',
+      display_name: 'tarini',
+      avatar_url: null,
+      current_xp: 490,
       current_level: 3,
-      current_streak: 5,
-      longest_streak: 9,
-      last_activity_date: new Date(Date.now() - 86400000).toISOString().split('T')[0], // yesterday
-      intellect: 45,
-      strength: 32,
-      discipline: 38,
-      knowledge: 40,
+      current_streak: 1,
+      longest_streak: 1,
+      last_activity_date: new Date().toISOString().split('T')[0],
+      intellect: 60,
+      strength: 18,
+      discipline: 10,
+      knowledge: 14,
+      mind: 10,
+      gold: 700,
+      diamonds: 100,
       sound_enabled: true,
-      created_at: new Date(Date.now() - 7 * 86400000).toISOString(),
+      created_at: '2026-09-12T14:16:51.836Z',
+      updated_at: new Date().toISOString()
+    },
+    '2d28c2cc-1951-4b9d-b245-96e4fbca929d': {
+      id: '2d28c2cc-1951-4b9d-b245-96e4fbca929d',
+      username: 'jagannath',
+      display_name: 'jagannath',
+      avatar_url: null,
+      current_xp: 60,
+      current_level: 1,
+      current_streak: 0,
+      longest_streak: 0,
+      last_activity_date: new Date().toISOString().split('T')[0],
+      intellect: 10,
+      strength: 10,
+      discipline: 10,
+      knowledge: 10,
+      gold: 850,
+      diamonds: 50,
+      sound_enabled: true,
+      created_at: '2026-09-12T17:00:00.000Z',
+      updated_at: new Date().toISOString()
+    },
+    '7a696b41-5be4-4895-8f08-c7e865cd15e9': {
+      id: '7a696b41-5be4-4895-8f08-c7e865cd15e9',
+      username: 'ashika',
+      display_name: 'ashika',
+      avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
+      current_xp: 0,
+      current_level: 1,
+      current_streak: 0,
+      longest_streak: 0,
+      last_activity_date: null,
+      intellect: 10,
+      strength: 10,
+      discipline: 10,
+      knowledge: 10,
+      gold: 850,
+      diamonds: 50,
+      sound_enabled: true,
+      created_at: '2026-09-12T18:00:00.000Z',
+      updated_at: new Date().toISOString()
+    },
+    '9ab8abf5-2f70-4204-998e-e71d3f8fbd06': {
+      id: '9ab8abf5-2f70-4204-998e-e71d3f8fbd06',
+      username: 'sthitiprangya',
+      display_name: 'sthitiprangya',
+      avatar_url: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=200&auto=format&fit=crop&q=80',
+      current_xp: 0,
+      current_level: 1,
+      current_streak: 0,
+      longest_streak: 0,
+      last_activity_date: null,
+      intellect: 10,
+      strength: 10,
+      discipline: 10,
+      knowledge: 10,
+      gold: 850,
+      diamonds: 50,
+      sound_enabled: true,
+      created_at: '2026-09-12T18:30:00.000Z',
+      updated_at: new Date().toISOString()
+    },
+    '93d916c1-6460-49e1-9ce6-f1a932ad42e1': {
+      id: '93d916c1-6460-49e1-9ce6-f1a932ad42e1',
+      username: 'omm',
+      display_name: 'omm',
+      avatar_url: null,
+      current_xp: 0,
+      current_level: 1,
+      current_streak: 0,
+      longest_streak: 0,
+      last_activity_date: null,
+      intellect: 10,
+      strength: 10,
+      discipline: 10,
+      knowledge: 10,
+      gold: 850,
+      diamonds: 50,
+      sound_enabled: true,
+      created_at: '2026-09-12T19:00:00.000Z',
       updated_at: new Date().toISOString()
     }
   },
@@ -124,6 +207,18 @@ function saveData(data) {
 }
 
 export const localStore = {
+  getAllProfiles: () => {
+    const data = loadData();
+    const list = Object.values(data.profiles || {}).filter(p => {
+      const u = (p.username || '').toLowerCase();
+      const d = (p.display_name || '').toLowerCase();
+      if (u.startsWith('demo') || u.startsWith('test') || u === 'adventurer_demo-' || u === 'cyberrunner') return false;
+      if (d.startsWith('demo') || d.startsWith('test') || d === 'cyber runner') return false;
+      return true;
+    });
+    return list;
+  },
+
   getProfile: (userId) => {
     const data = loadData();
     if (!data.profiles[userId]) {
