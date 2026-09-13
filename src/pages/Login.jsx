@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, AlertCircle, KeyRound, X, CheckCircle2, Volume2, VolumeX } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, AlertCircle, KeyRound, X, CheckCircle2, Volume2, VolumeX, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
 import { soundFx } from '../lib/soundEffects';
@@ -8,7 +8,7 @@ import { LoginCharacter } from '../components/LoginCharacter';
 import { SEOHead } from '../components/SEOHead';
 
 export const Login = () => {
-  const { signIn, resetPassword } = useAuth();
+  const { signIn, resetPassword, loginGuest } = useAuth();
   const { soundMuted, toggleSound } = useGame();
   const navigate = useNavigate();
 
@@ -17,6 +17,7 @@ export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [guestLoading, setGuestLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Forgot password modal state
@@ -46,6 +47,20 @@ export const Login = () => {
       setError(err.message || 'Authentication sequence failed.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGuestLogin = async () => {
+    setGuestLoading(true);
+    setError(null);
+    try {
+      soundFx.playClick();
+      await loginGuest();
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message || 'Guest access sequence failed.');
+    } finally {
+      setGuestLoading(false);
     }
   };
 
@@ -117,17 +132,17 @@ export const Login = () => {
       {/* Main Staging Wrapper: Animated Character + Split Login Card */}
       <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-8 w-full max-w-5xl z-10 relative">
         
-        {/* Animated RPG Character Companion Walking in from the Side */}
-        <div className="flex items-center justify-center shrink-0">
+        {/* Animated RPG Character Companion (Visible on Desktop / Large screens) */}
+        <div className="hidden lg:flex items-center justify-center shrink-0">
           <LoginCharacter />
         </div>
 
-        {/* Main Split Container matching Screen 1 (Animated Entrance at T=1.1s) */}
-        <div className="w-full max-w-4xl bg-[#101726]/90 border border-[#1b253b] rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-12 relative z-10 animate-login-card">
+        {/* Main Container */}
+        <div className="w-full max-w-4xl bg-[#101726]/95 border border-[#1b253b] rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-12 relative z-10 animate-login-card">
           
-          {/* Left Half: Art Banner + Brand + Floating Script Text */}
+          {/* Left Half: Art Banner + Brand + Floating Script Text (Desktop/Tablet Only) */}
           <div 
-            className="md:col-span-6 p-8 sm:p-10 relative flex flex-col justify-between min-h-[340px] md:min-h-[480px] bg-cover bg-center"
+            className="hidden md:flex md:col-span-6 p-8 sm:p-10 relative flex-col justify-between min-h-[480px] bg-cover bg-center"
             style={{ backgroundImage: 'url("/hero-bg.jpg")' }}
           >
             {/* Subtle gradient to ensure text readability */}
@@ -163,10 +178,27 @@ export const Login = () => {
           </div>
 
           {/* Right Half: Dark Glass Login Card */}
-          <div className="md:col-span-6 p-8 sm:p-10 bg-[#0e1424] flex flex-col justify-center space-y-6">
+          <div className="col-span-12 md:col-span-6 p-6 sm:p-10 bg-[#0e1424] flex flex-col justify-center space-y-5">
             
+            {/* Mobile Header with Logo (Mobile Only) */}
+            <div className="md:hidden flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2.5">
+                <img 
+                  src="/app-logo.png" 
+                  alt="Black Bulls Emblem" 
+                  className="w-8 h-8 object-contain drop-shadow-[0_0_12px_rgba(245,158,11,0.8)]" 
+                />
+                <span className="font-heading font-black text-xl text-white tracking-wide">
+                  LIFE <span className="text-blue-400">RPG</span>
+                </span>
+              </div>
+              <span className="text-[10px] font-bold text-amber-400/90 tracking-wider uppercase">
+                Beyond Your Limit
+              </span>
+            </div>
+
             {/* 1. Header (Staggered Entrance) */}
-            <div className="space-y-1.5 animate-login-field-1">
+            <div className="space-y-1 animate-login-field-1">
               <h1 className="font-heading font-black text-2xl sm:text-3xl text-white">
                 Welcome Back!
               </h1>
@@ -183,33 +215,47 @@ export const Login = () => {
             )}
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3.5">
               
               {/* 2. Email or Username (Staggered Entrance) */}
-              <div className="space-y-1.5 animate-login-field-2">
+              <div className="space-y-1 animate-login-field-2">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Email or Username
+                </label>
                 <div className="relative group/input transition-transform duration-200 focus-within:scale-[1.01]">
                   <Mail className="w-4 h-4 text-slate-500 group-focus-within/input:text-blue-400 transition-colors absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="Email or Username"
+                    placeholder="e.g. tariniprasadpati2023@gmail.com"
                     required
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
+                    autoComplete="username"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#141c2e] border border-[#1e2a47] hover:border-slate-600 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
                   />
                 </div>
               </div>
 
               {/* 3. Password (Staggered Entrance) */}
-              <div className="space-y-1.5 animate-login-field-3">
+              <div className="space-y-1 animate-login-field-3">
+                <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                  Password
+                </label>
                 <div className="relative group/input transition-transform duration-200 focus-within:scale-[1.01]">
                   <Lock className="w-4 h-4 text-slate-500 group-focus-within/input:text-blue-400 transition-colors absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Password"
+                    placeholder="Enter password"
                     required
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
+                    autoComplete="current-password"
                     className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#141c2e] border border-[#1e2a47] hover:border-slate-600 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
                   />
                   <button
@@ -224,7 +270,7 @@ export const Login = () => {
               </div>
 
               {/* 4. Remember Me & Forgot Password Row (Staggered Entrance) */}
-              <div className="flex items-center justify-between text-xs animate-login-field-4">
+              <div className="flex items-center justify-between text-xs animate-login-field-4 pt-0.5">
                 <label className="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-white transition-colors select-none">
                   <input
                     type="checkbox"
@@ -245,7 +291,7 @@ export const Login = () => {
               </div>
 
               {/* 5. Login Button (Staggered Entrance Pop) */}
-              <div className="animate-login-btn pt-1">
+              <div className="animate-login-btn pt-1 space-y-2.5">
                 <button
                   type="submit"
                   disabled={loading}
@@ -253,12 +299,31 @@ export const Login = () => {
                 >
                   {loading ? 'Entering realm...' : 'Login'}
                 </button>
+
+                {/* Instant 1-Click Demo / Guest Pass */}
+                <div className="relative flex items-center justify-center py-1">
+                  <div className="border-t border-white/10 w-full" />
+                  <span className="bg-[#0e1424] px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 shrink-0">
+                    or explore now
+                  </span>
+                  <div className="border-t border-white/10 w-full" />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleGuestLogin}
+                  disabled={guestLoading || loading}
+                  className="w-full py-2.5 rounded-xl font-heading font-semibold text-xs text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-400/50 shadow-[0_2px_12px_rgba(245,158,11,0.15)] transition-all transform hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{guestLoading ? 'Summoning Demo Hero...' : '1-Click Guest Login / Demo Hero'}</span>
+                </button>
               </div>
 
             </form>
 
             {/* 6. Footer Link (Staggered Entrance) */}
-            <div className="pt-2 text-center text-xs text-slate-400 animate-login-footer">
+            <div className="pt-1 text-center text-xs text-slate-400 animate-login-footer">
               <span>Don't have an account? </span>
               <Link to="/signup" className="text-blue-400 hover:text-blue-300 font-bold transition-colors">
                 Sign Up
@@ -325,6 +390,9 @@ export const Login = () => {
                     onChange={(e) => setResetEmail(e.target.value)}
                     placeholder="e.g. tariniprasadpati2023@gmail.com"
                     required
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
                     className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#141c2e] border border-[#1e2a47] text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
                   />
                 </div>
@@ -343,6 +411,9 @@ export const Login = () => {
                     placeholder="Enter new password"
                     required
                     minLength={6}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck="false"
                     className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#141c2e] border border-[#1e2a47] text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
                   />
                   <button

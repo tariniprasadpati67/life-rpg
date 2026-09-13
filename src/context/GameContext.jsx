@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { useAuth } from './AuthContext';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { soundFx } from '../lib/soundEffects';
 import { getRequiredXP } from '../lib/xpSystem';
 import { parseDurationMinutes } from '../lib/timerUtils';
@@ -337,6 +338,29 @@ export const GameProvider = ({ children }) => {
 
           if (pData.weeklyCalendar) setWeeklyCalendar(pData.weeklyCalendar);
           if (pData.recentCompletions) setRecentCompletions(pData.recentCompletions);
+        }
+      } else if (isSupabaseConfigured && supabase && user?.id && !user?.isGuest && user?.id !== 'demo-user-123') {
+        // Direct Supabase query fallback for Vercel / Cloud deployments!
+        try {
+          const { data: supaProf } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .maybeSingle();
+
+          if (supaProf) {
+            const uName = supaProf.username || user.user_metadata?.username || user.email?.split('@')[0] || 'Hero';
+            const freshProfile = {
+              ...supaProf,
+              display_name: supaProf.display_name || uName
+            };
+            setProfile(freshProfile);
+            try {
+              localStorage.setItem(`rpg_profile_${user.id}`, JSON.stringify(freshProfile));
+            } catch (e) {}
+          }
+        } catch (supaErr) {
+          console.warn('Supabase client profile fallback notice:', supaErr);
         }
       }
 

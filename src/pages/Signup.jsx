@@ -79,11 +79,11 @@ export const Signup = () => {
       <div className="absolute inset-0 bg-gradient-to-t from-[#090d16] via-[#090d16]/80 to-[#090d16]/40 pointer-events-none" />
 
       {/* Main Split Container */}
-      <div className="w-full max-w-4xl bg-[#101726]/90 border border-[#1b253b] rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-12 relative z-10">
+      <div className="w-full max-w-4xl bg-[#101726]/95 border border-[#1b253b] rounded-3xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-12 relative z-10">
         
-        {/* Left Half: Art Banner + Brand */}
+        {/* Left Half: Art Banner + Brand (Desktop/Tablet Only) */}
         <div 
-          className="md:col-span-6 p-8 sm:p-10 relative flex flex-col justify-between min-h-[340px] md:min-h-[500px] bg-cover bg-center"
+          className="hidden md:flex md:col-span-6 p-8 sm:p-10 relative flex-col justify-between min-h-[480px] bg-cover bg-center"
           style={{ backgroundImage: 'url("/hero-bg.jpg")' }}
         >
           <div className="absolute inset-0 bg-gradient-to-t from-[#090d16] via-black/40 to-black/60" />
@@ -118,9 +118,26 @@ export const Signup = () => {
         </div>
 
         {/* Right Half: Sign Up Form */}
-        <div className="md:col-span-6 p-8 sm:p-10 bg-[#0e1424] flex flex-col justify-center space-y-6">
+        <div className="col-span-12 md:col-span-6 p-6 sm:p-10 bg-[#0e1424] flex flex-col justify-center space-y-5">
           
-          <div className="space-y-1.5">
+          {/* Mobile Header with Logo (Mobile Only) */}
+          <div className="md:hidden flex items-center justify-between pb-3 border-b border-white/10">
+            <div className="flex items-center gap-2.5">
+              <img 
+                src="/app-logo.png" 
+                alt="Black Bulls Emblem" 
+                className="w-8 h-8 object-contain drop-shadow-[0_0_12px_rgba(245,158,11,0.8)]" 
+              />
+              <span className="font-heading font-black text-xl text-white tracking-wide">
+                LIFE <span className="text-blue-400">RPG</span>
+              </span>
+            </div>
+            <span className="text-[10px] font-bold text-amber-400/90 tracking-wider uppercase">
+              Beyond Your Limit
+            </span>
+          </div>
+
+          <div className="space-y-1">
             <h1 className="font-heading font-black text-2xl sm:text-3xl text-white">
               Create Account
             </h1>
@@ -136,54 +153,77 @@ export const Signup = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3.5">
             
-            {/* Full Name */}
-            <div className="space-y-1.5">
+            {/* Full Name / Username */}
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                Hero Name / Username
+              </label>
               <div className="relative">
                 <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Hero Name / Username"
+                  placeholder="e.g. ShadowKnight"
                   required
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  autoComplete="username"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#141c2e] border border-[#1e2a47] text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
             </div>
 
             {/* Email */}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                Email Address
+              </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email address"
+                  placeholder="e.g. name@example.com"
                   required
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  autoComplete="email"
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#141c2e] border border-[#1e2a47] text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
             </div>
 
             {/* Password */}
-            <div className="space-y-1.5">
+            <div className="space-y-1">
+              <label className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+                Password (min 6 characters)
+              </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
+                  placeholder="At least 6 characters"
                   required
+                  minLength={6}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck="false"
+                  autoComplete="new-password"
                   className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#141c2e] border border-[#1e2a47] text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
+                  aria-label="Toggle password visibility"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
