@@ -1,6 +1,7 @@
 import express from 'express';
 import { 
   getSystemStatus, 
+  loginUser,
   loginGuest, 
   registerUser, 
   changePassword,
@@ -13,6 +14,7 @@ const router = express.Router();
 
 router.get('/status', getSystemStatus);
 router.get('/resolve-email', resolveEmail);
+router.post('/login', loginUser);
 router.post('/register', registerUser);
 router.post('/guest', loginGuest);
 router.post('/reset-password', resetPassword);

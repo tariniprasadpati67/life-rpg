@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { resilientFetch, wakeUpServer } from '../lib/api';
 
 const AuthContext = createContext(null);
 
@@ -95,15 +96,15 @@ export const AuthProvider = ({ children }) => {
 
     // 1. Try our server registration endpoint (auto-confirms email and checks username uniqueness)
     try {
-      const res = await fetch('/api/auth/register', {
+      const res = await resilientFetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, password: cleanPassword, username: cleanUsername })
       });
       const contentType = res.headers.get('content-type') || '';
-      if (res.ok && contentType.includes('application/json')) {
+      if (contentType.includes('application/json')) {
         const data = await res.json();
-        if (data.success) {
+        if (res.ok && data.success) {
           // Automatically sign in to Supabase for the session
           if (isSupabaseConfigured && supabase) {
             try {
@@ -126,70 +127,77 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('rpg_auth_token', data.token);
           localStorage.setItem('rpg_auth_user', JSON.stringify(data.user));
           return data;
-        } else if (data.error) {
+        } else if (!res.ok && data.error) {
           throw new Error(data.error);
         }
       }
     } catch (apiErr) {
-      if (apiErr.message && !apiErr.message.includes('Failed to fetch') && !apiErr.message.includes('JSON')) {
+      if (apiErr.message && !apiErr.isNetworkError && !apiErr.message.includes('Failed to fetch') && !apiErr.message.includes('JSON')) {
         throw apiErr;
       }
     }
 
     // 2. Direct Supabase signup fallback (Works directly on Vercel / Mobile / Cloud)
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.auth.signUp({
-        email: cleanEmail,
-        password: cleanPassword,
-        options: {
-          data: {
-            username: cleanUsername,
-            display_name: cleanUsername
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email: cleanEmail,
+          password: cleanPassword,
+          options: {
+            data: {
+              username: cleanUsername,
+              display_name: cleanUsername
+            }
+          }
+        });
+
+        if (error) {
+          if (error.message.includes('Database error saving new user') || error.message.includes('already registered')) {
+            throw new Error(`Username or email is already registered. Please login with your password.`);
+          }
+          throw error;
+        }
+
+        let currentSession = data.session;
+        let currentUser = data.user;
+
+        if (!currentSession && currentUser) {
+          try {
+            const signInRes = await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword });
+            if (signInRes.data?.session) {
+              currentSession = signInRes.data.session;
+              currentUser = signInRes.data.user;
+            }
+          } catch (e) {}
+        }
+
+        if (currentUser) {
+          setUser(currentUser);
+          try {
+            const saved = JSON.parse(localStorage.getItem('rpg_known_users') || '{}');
+            saved[cleanUsername.toLowerCase()] = cleanEmail;
+            localStorage.setItem('rpg_known_users', JSON.stringify(saved));
+          } catch (e) {}
+
+          if (currentSession) {
+            setSession(currentSession);
+            setToken(currentSession.access_token);
+            localStorage.setItem('rpg_auth_token', currentSession.access_token);
+            localStorage.setItem('rpg_auth_user', JSON.stringify(currentUser));
+          } else {
+            const activeToken = `token-${currentUser.id}`;
+            setToken(activeToken);
+            localStorage.setItem('rpg_auth_token', activeToken);
+            localStorage.setItem('rpg_auth_user', JSON.stringify(currentUser));
           }
         }
-      });
-
-      if (error) {
-        if (error.message.includes('Database error saving new user') || error.message.includes('already registered')) {
-          throw new Error(`Username or email is already registered. Please login with your password.`);
+        return data;
+      } catch (err) {
+        if (err.message?.includes('Failed to fetch') || err.message?.includes('NetworkError')) {
+          throw new Error('Server connection waking up (Render free tier). Please wait 10 seconds and try again.');
         }
-        throw error;
+        throw err;
       }
-
-      let currentSession = data.session;
-      let currentUser = data.user;
-
-      if (!currentSession && currentUser) {
-        try {
-          const signInRes = await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPassword });
-          if (signInRes.data?.session) {
-            currentSession = signInRes.data.session;
-            currentUser = signInRes.data.user;
-          }
-        } catch (e) {}
-      }
-
-      if (currentUser) {
-        setUser(currentUser);
-        try {
-          const saved = JSON.parse(localStorage.getItem('rpg_known_users') || '{}');
-          saved[cleanUsername.toLowerCase()] = cleanEmail;
-          localStorage.setItem('rpg_known_users', JSON.stringify(saved));
-        } catch (e) {}
-
-        if (currentSession) {
-          setSession(currentSession);
-          setToken(currentSession.access_token);
-          localStorage.setItem('rpg_auth_token', currentSession.access_token);
-          localStorage.setItem('rpg_auth_user', JSON.stringify(currentUser));
-        } else {
-          const activeToken = `token-${currentUser.id}`;
-          setToken(activeToken);
-          localStorage.setItem('rpg_auth_token', activeToken);
-          localStorage.setItem('rpg_auth_user', JSON.stringify(currentUser));
-        }
-      }
-      return data;
     }
 
     // Offline fallback
@@ -229,6 +237,59 @@ export const AuthProvider = ({ children }) => {
       email = EMAIL_ALIASES[email];
     }
 
+    // 1. First attempt: Authenticate via our server login endpoint
+    // This executes on the backend with direct Supabase access, bypassing mobile ISP DNS blocks
+    try {
+      const apiRes = await resilientFetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier: cleanInput, email, password: cleanPass })
+      });
+
+      const contentType = apiRes.headers.get('content-type') || '';
+      if (contentType.includes('application/json')) {
+        const data = await apiRes.json();
+        if (apiRes.ok && data.success && data.user) {
+          if (data.session) {
+            setSession(data.session);
+            if (isSupabaseConfigured && supabase?.auth?.setSession) {
+              try {
+                await supabase.auth.setSession({
+                  access_token: data.session.access_token,
+                  refresh_token: data.session.refresh_token
+                });
+              } catch (_) {}
+            }
+          }
+          setUser(data.user);
+          const activeToken = data.token || data.session?.access_token || `token-${data.user.id}`;
+          setToken(activeToken);
+          localStorage.setItem('rpg_auth_token', activeToken);
+          localStorage.setItem('rpg_auth_user', JSON.stringify(data.user));
+          if (data.profile) {
+            localStorage.setItem(`rpg_profile_${data.user.id}`, JSON.stringify(data.profile));
+          }
+          return data;
+        } else if (!apiRes.ok && data.error) {
+          // Explicit authentication error from server
+          throw new Error(data.error);
+        }
+      }
+    } catch (serverErr) {
+      // If server returned an explicit auth error (e.g. Invalid credentials), throw immediately
+      if (
+        serverErr.message &&
+        !serverErr.isNetworkError &&
+        !serverErr.message.includes('Failed to fetch') &&
+        !serverErr.message.includes('waking up') &&
+        !serverErr.message.includes('PROXY_TIMEOUT')
+      ) {
+        throw serverErr;
+      }
+      // Otherwise proceed to direct Supabase fallback
+    }
+
+    // 2. Second attempt: Direct client Supabase fallback
     if (isSupabaseConfigured && supabase) {
       // If user typed a username without @, resolve to their email address
       if (!email.includes('@')) {
@@ -255,7 +316,7 @@ export const AuthProvider = ({ children }) => {
 
         if (!email.includes('@')) {
           try {
-            const res = await fetch(`/api/auth/resolve-email?identifier=${encodeURIComponent(cleanUser)}`);
+            const res = await resilientFetch(`/api/auth/resolve-email?identifier=${encodeURIComponent(cleanUser)}`);
             const contentType = res.headers.get('content-type') || '';
             if (res.ok && contentType.includes('application/json')) {
               const d = await res.json();
@@ -274,27 +335,38 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: email.trim(),
-        password: cleanPass
-      });
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email.trim(),
+          password: cleanPass
+        });
 
-      if (error) {
-        if (error.message.includes('Email not confirmed')) {
-          throw new Error('Please verify your email or click Login again.');
+        if (error) {
+          if (error.message.includes('Email not confirmed')) {
+            throw new Error('Please verify your email or click Login again.');
+          }
+          if (error.message.includes('Invalid login credentials')) {
+            throw new Error('Invalid email or password. Please verify your credentials or click "Forgot password?" to reset it.');
+          }
+          throw error;
         }
-        if (error.message.includes('Invalid login credentials')) {
-          throw new Error('Invalid email or password. Please verify your credentials or click "Forgot password?" to reset it.');
+
+        setSession(data.session);
+        setUser(data.user);
+        setToken(data.session.access_token);
+        localStorage.setItem('rpg_auth_token', data.session.access_token);
+        localStorage.setItem('rpg_auth_user', JSON.stringify(data.user));
+        return data;
+      } catch (supaErr) {
+        if (
+          supaErr.message?.includes('Failed to fetch') ||
+          supaErr.message?.includes('NetworkError') ||
+          supaErr.message?.includes('Load failed')
+        ) {
+          throw new Error('Server connection waking up (Render free tier). Please wait 10 seconds and try again.');
         }
-        throw error;
+        throw supaErr;
       }
-
-      setSession(data.session);
-      setUser(data.user);
-      setToken(data.session.access_token);
-      localStorage.setItem('rpg_auth_token', data.session.access_token);
-      localStorage.setItem('rpg_auth_user', JSON.stringify(data.user));
-      return data;
     }
 
     // Local fallback signin
@@ -317,7 +389,7 @@ export const AuthProvider = ({ children }) => {
     const cleanPass = (newPassword || '').trim();
 
     try {
-      const res = await fetch('/api/auth/reset-password', {
+      const res = await resilientFetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: cleanEmail, newPassword: cleanPass })
@@ -330,11 +402,18 @@ export const AuthProvider = ({ children }) => {
     } catch (e) {}
 
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
-        redirectTo: window.location.origin + '/login'
-      });
-      if (error) throw error;
-      return { success: true, message: `Password reset link sent to ${cleanEmail}. Check your inbox!` };
+      try {
+        const { data, error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+          redirectTo: window.location.origin + '/login'
+        });
+        if (error) throw error;
+        return { success: true, message: `Password reset link sent to ${cleanEmail}. Check your inbox!` };
+      } catch (err) {
+        if (err.message?.includes('Failed to fetch')) {
+          throw new Error('Server connection waking up. Please wait a few seconds and try again.');
+        }
+        throw err;
+      }
     }
 
     return { success: true, message: 'Password updated locally.' };
@@ -354,7 +433,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('rpg_local_profile_v3');
       localStorage.removeItem('rpg_local_quests_v3');
 
-      const res = await fetch('/api/auth/guest', { method: 'POST' });
+      const res = await resilientFetch('/api/auth/guest', { method: 'POST' });
       const data = await res.json();
       if (data.success) {
         setSession(null);

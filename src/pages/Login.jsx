@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, Eye, EyeOff, AlertCircle, KeyRound, X, CheckCircle2, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -6,11 +6,16 @@ import { useGame } from '../context/GameContext';
 import { soundFx } from '../lib/soundEffects';
 import { LoginCharacter } from '../components/LoginCharacter';
 import { SEOHead } from '../components/SEOHead';
+import { wakeUpServer } from '../lib/api';
 
 export const Login = () => {
   const { signIn, resetPassword } = useAuth();
   const { soundMuted, toggleSound } = useGame();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    wakeUpServer();
+  }, []);
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -43,7 +48,16 @@ export const Login = () => {
       await signIn(identifier.trim(), password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.message || 'Authentication sequence failed.');
+      let msg = err.message || 'Authentication sequence failed.';
+      if (
+        msg.includes('Failed to fetch') ||
+        msg.includes('NetworkError') ||
+        msg.includes('Load failed') ||
+        msg.includes('fetch failed')
+      ) {
+        msg = 'Server connection waking up (Render free tier). Please wait 10 seconds and tap Sign In again.';
+      }
+      setError(msg);
     } finally {
       setLoading(false);
     }

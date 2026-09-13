@@ -1,6 +1,8 @@
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { GameProvider } from './context/GameContext';
+import { wakeUpServer } from './lib/api';
 import { Navbar } from './components/Navbar';
 import { LevelUpModal } from './components/LevelUpModal';
 import { FloatingXP } from './components/FloatingXP';
@@ -57,6 +59,10 @@ function AppRoutes() {
   const { user } = useAuth();
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+
+  useEffect(() => {
+    wakeUpServer();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col justify-between selection:bg-blue-500/30 selection:text-blue-200">

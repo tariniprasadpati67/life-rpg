@@ -10,6 +10,131 @@ export const getSystemStatus = (req, res) => {
   });
 };
 
+export const loginUser = async (req, res) => {
+  try {
+    const { identifier, email, password } = req.body;
+    const cleanPass = (password || '').trim();
+    let loginEmail = (identifier || email || '').trim();
+
+    if (!loginEmail || !cleanPass) {
+      return res.status(400).json({ success: false, error: 'Email or username and password are required.' });
+    }
+
+    const EMAIL_ALIASES = {
+      'tarini@gmail.com': 'tariniprasadpati2023@gmail.com',
+      'tariniprasad@gmail.com': 'tariniprasadpati2023@gmail.com',
+      'tariniprasadpati@gmail.com': 'tariniprasadpati2023@gmail.com',
+      'ashika@gmail.com': 'ashikatoppo@gamail.com',
+      'ashikatoppo@gmail.com': 'ashikatoppo@gamail.com',
+      'jagannath@gmail.com': 'jagannath@123gmail.com'
+    };
+
+    if (EMAIL_ALIASES[loginEmail.toLowerCase()]) {
+      loginEmail = EMAIL_ALIASES[loginEmail.toLowerCase()];
+    }
+
+    if (isSupabaseConfigured && supabase) {
+      // If user provided a username without @, find their registered email
+      if (!loginEmail.includes('@')) {
+        const cleanUser = loginEmail.toLowerCase();
+        const DEFAULT_KNOWN = {
+          ashika: 'ashikatoppo@gamail.com',
+          ashikatoppo: 'ashikatoppo@gamail.com',
+          tarini: 'tariniprasadpati2023@gmail.com',
+          tariniprasad: 'tariniprasadpati2023@gmail.com',
+          tariniprasadpati: 'tariniprasadpati2023@gmail.com',
+          tariniprasadpati2023: 'tariniprasadpati2023@gmail.com',
+          jagannath: 'jagannath@123gmail.com',
+          sthitiprangya: 'sthitiprangya@gmail.com'
+        };
+
+        if (DEFAULT_KNOWN[cleanUser]) {
+          loginEmail = DEFAULT_KNOWN[cleanUser];
+        } else {
+          try {
+            const { data: userList } = await supabase.auth.admin.listUsers();
+            const found = userList?.users?.find(
+              u => u.user_metadata?.username?.toLowerCase() === cleanUser ||
+                   u.email?.toLowerCase() === cleanUser ||
+                   u.email?.split('@')[0]?.toLowerCase() === cleanUser
+            );
+            if (found?.email) {
+              loginEmail = found.email;
+            } else {
+              // Try profiles table
+              const { data: prof } = await supabase
+                .from('profiles')
+                .select('id, username')
+                .ilike('username', cleanUser)
+                .maybeSingle();
+
+              if (prof?.id) {
+                const { data: uData } = await supabase.auth.admin.getUserById(prof.id);
+                if (uData?.user?.email) {
+                  loginEmail = uData.user.email;
+                }
+              }
+            }
+          } catch (listErr) {
+            console.warn('User lookup warning:', listErr);
+          }
+        }
+      }
+
+      if (!loginEmail.includes('@')) {
+        return res.status(400).json({
+          success: false,
+          error: `Username "${identifier}" not recognized. Please log in with your registered email address.`
+        });
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: loginEmail.toLowerCase().trim(),
+        password: cleanPass
+      });
+
+      if (error) {
+        let msg = error.message;
+        if (msg.includes('Invalid login credentials')) {
+          msg = 'Invalid email or password. Please verify your credentials or click "Forgot password?".';
+        }
+        return res.status(400).json({ success: false, error: msg });
+      }
+
+      // Fetch user's profile
+      const { data: prof } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .maybeSingle();
+
+      return res.json({
+        success: true,
+        user: data.user,
+        session: data.session,
+        token: data.session?.access_token || `token-${data.user.id}`,
+        profile: prof || null
+      });
+    }
+
+    // Local demo/fallback
+    const demoUser = {
+      id: 'demo-user-123',
+      email: loginEmail,
+      user_metadata: { username: loginEmail.split('@')[0], display_name: loginEmail.split('@')[0] }
+    };
+    return res.json({
+      success: true,
+      user: demoUser,
+      token: 'demo-user-123',
+      profile: localStore.getProfile('demo-user-123')
+    });
+  } catch (err) {
+    console.error('Login error:', err);
+    return res.status(500).json({ success: false, error: err.message || 'Authentication sequence failed.' });
+  }
+};
+
 export const registerUser = async (req, res) => {
   try {
     const { email, password, username } = req.body;

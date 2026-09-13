@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Mail, Lock, Eye, EyeOff, AlertCircle, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
 import { soundFx } from '../lib/soundEffects';
 import { SEOHead } from '../components/SEOHead';
+import { wakeUpServer } from '../lib/api';
 
 export const Signup = () => {
   const { signUp } = useAuth();
   const { soundMuted, toggleSound } = useGame();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    wakeUpServer();
+  }, []);
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -42,7 +47,14 @@ export const Signup = () => {
       navigate('/dashboard');
     } catch (err) {
       let msg = err.message || 'Registration failed.';
-      if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('already exists')) {
+      if (
+        msg.includes('Failed to fetch') ||
+        msg.includes('NetworkError') ||
+        msg.includes('Load failed') ||
+        msg.includes('fetch failed')
+      ) {
+        msg = 'Server connection waking up (Render free tier). Please wait 10 seconds and tap Create Account again.';
+      } else if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('already exists')) {
         msg = 'An account with this email already exists. Please log in directly.';
       }
       setError(msg);
