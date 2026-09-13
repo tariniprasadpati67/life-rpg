@@ -1,0 +1,21 @@
+# Life RPG Robots.txt
+# https://liferpg.app
+
+User-agent: *
+Allow: /
+Allow: /login
+Allow: /signup
+Allow: /dashboard
+Allow: /quests
+Allow: /character
+Allow: /streak
+Allow: /shop
+Allow: /leaderboard
+Allow: /profile
+Allow: /settings
+
+# Disallow internal API endpoints and private storage
+Disallow: /api/
+Disallow: /server/
+
+Sitemap: https://liferpg.app/sitemap.xml

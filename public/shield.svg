@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="shieldGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FCD34D" />
+      <stop offset="50%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <linearGradient id="shieldInner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#78350F" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#1E1B4B" stop-opacity="0.8" />
+    </linearGradient>
+  </defs>
+  <!-- Shield Outline -->
+  <path d="M16 2L5 6V14C5 21.5 9.7 28.2 16 30C22.3 28.2 27 21.5 27 14V6L16 2Z" fill="url(#shieldInner)" stroke="url(#shieldGold)" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Inner Border Highlight -->
+  <path d="M16 4.5L7.5 7.8V14C7.5 19.8 11.2 25.1 16 26.8C20.8 25.1 24.5 19.8 24.5 14V7.8L16 4.5Z" stroke="#FBBF24" stroke-width="1" stroke-opacity="0.5" stroke-linejoin="round"/>
+  <!-- Sword in Center -->
+  <!-- Blade -->
+  <path d="M16 7V21" stroke="#FDE68A" stroke-width="1.8" stroke-linecap="round"/>
+  <!-- Crossguard -->
+  <path d="M12.5 18.5H19.5" stroke="#F59E0B" stroke-width="1.6" stroke-linecap="round"/>
+  <!-- Pommel -->
+  <circle cx="16" cy="23" r="1.2" fill="#FCD34D"/>
+  <!-- Center Star/Spark -->
+  <path d="M16 11L17 13L19 13.5L17.2 15L17.5 17L16 15.8L14.5 17L14.8 15L13 13.5L15 13L16 11Z" fill="#FDE68A"/>
+</svg>

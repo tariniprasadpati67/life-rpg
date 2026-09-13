@@ -1,0 +1,192 @@
+{
+  "profiles": {
+    "demo-user-123": {
+      "id": "demo-user-123",
+      "username": "CyberRunner",
+      "display_name": "Cyber Runner",
+      "avatar_url": "/avatar-alex.jpg",
+      "current_xp": 350,
+      "current_level": 3,
+      "current_streak": 5,
+      "longest_streak": 9,
+      "last_activity_date": "2026-09-11",
+      "intellect": 45,
+      "strength": 32,
+      "discipline": 38,
+      "knowledge": 40,
+      "sound_enabled": true,
+      "created_at": "2026-09-05T17:03:09.543Z",
+      "updated_at": "2026-09-13T03:25:38.734Z",
+      "gold": 50,
+      "diamonds": 15,
+      "streak_shields": 3,
+      "equipped_streak_shield": true,
+      "equipped_frame": "Fire Frame",
+      "equipped_badge": "Novice Adventurer",
+      "inventory": [
+        "frame-fire",
+        "badge-bronze",
+        "item-aura-cosmic",
+        "item-flame-hyper"
+      ],
+      "equipped_aura": "Aegis Streak Shield Orbit",
+      "equipped_streak_flame": "Hyperdrive Blue Flame",
+      "equipped_completion_effect": null,
+      "equipped_victory_emote": null
+    },
+    "demo-token": {
+      "id": "demo-token",
+      "username": "Adventurer_demo-",
+      "display_name": "Cyber Adventurer",
+      "avatar_url": "cyber-avatar-1",
+      "current_xp": 0,
+      "current_level": 1,
+      "current_streak": 0,
+      "longest_streak": 0,
+      "last_activity_date": null,
+      "intellect": 10,
+      "strength": 10,
+      "discipline": 10,
+      "knowledge": 10,
+      "sound_enabled": true,
+      "created_at": "2026-09-12T19:53:26.693Z",
+      "updated_at": "2026-09-12T19:54:00.361Z",
+      "equipped_frame": "Fire Frame",
+      "equipped_badge": null,
+      "equipped_aura": null,
+      "equipped_completion_effect": null,
+      "equipped_victory_emote": null,
+      "equipped_streak_flame": null,
+      "streak_shields": 2,
+      "gold": 1500,
+      "diamonds": 50
+    }
+  },
+  "quests": {
+    "q-1": {
+      "id": "q-1",
+      "user_id": "demo-user-123",
+      "title": "Master JavaScript Async Patterns",
+      "description": "Implement Promise combinators and async generators for high-throughput pipeline.",
+      "category": "Coding",
+      "difficulty": "Hard",
+      "xp_reward": 200,
+      "is_active": true,
+      "created_at": "2026-09-12T17:03:09.543Z"
+    },
+    "q-2": {
+      "id": "q-2",
+      "user_id": "demo-user-123",
+      "title": "HIIT Cyber Workout Session",
+      "description": "30 minutes high-intensity kettlebell and bodyweight circuit.",
+      "category": "Fitness",
+      "difficulty": "Medium",
+      "xp_reward": 120,
+      "is_active": true,
+      "created_at": "2026-09-12T17:03:09.543Z"
+    },
+    "q-3": {
+      "id": "q-3",
+      "user_id": "demo-user-123",
+      "title": "Read 25 Pages: Designing Data-Intensive Applications",
+      "description": "Chapter on replication strategies, partition tolerance, and consensus.",
+      "category": "Reading",
+      "difficulty": "Medium",
+      "xp_reward": 100,
+      "is_active": true,
+      "created_at": "2026-09-12T17:03:09.543Z"
+    },
+    "q-4": {
+      "id": "q-4",
+      "user_id": "demo-user-123",
+      "title": "Neural Reset Meditation",
+      "description": "15 minutes mindfulness breathing and binaural audio focus.",
+      "category": "Mindfulness",
+      "difficulty": "Easy",
+      "xp_reward": 80,
+      "is_active": true,
+      "created_at": "2026-09-12T17:03:09.543Z"
+    },
+    "q-5": {
+      "id": "q-5",
+      "user_id": "demo-user-123",
+      "title": "System Architecture Review",
+      "description": "Document API contracts, RLS rules, and rate-limiting schemas.",
+      "category": "Coding",
+      "difficulty": "Epic",
+      "xp_reward": 350,
+      "is_active": true,
+      "created_at": "2026-09-12T17:03:09.543Z"
+    },
+    "q-1789261027897-qm8o6z": {
+      "id": "q-1789261027897-qm8o6z",
+      "user_id": "demo-user-123",
+      "title": "Deep Focus Study Session",
+      "description": "Uninterrupted deep work studying tech documentation or lecture materials.",
+      "category": "Study",
+      "difficulty": "Medium",
+      "duration": "45 min",
+      "xp_reward": 65,
+      "is_active": true,
+      "created_at": "2026-09-13T00:57:07.897Z"
+    },
+    "q-1789261027899-msjm8k": {
+      "id": "q-1789261027899-msjm8k",
+      "user_id": "demo-user-123",
+      "title": "Gym / Strength Training Workout",
+      "description": "Heavy compound lifts, dumbbell circuit, or machine resistance training.",
+      "category": "Fitness",
+      "difficulty": "Hard",
+      "duration": "50 min",
+      "xp_reward": 75,
+      "is_active": true,
+      "created_at": "2026-09-13T00:57:07.899Z"
+    },
+    "q-1789261027902-haptis": {
+      "id": "q-1789261027902-haptis",
+      "user_id": "demo-user-123",
+      "title": "Language Vocabulary Practice",
+      "description": "Drill 25 new vocabulary words and phrases in a foreign language.",
+      "category": "Knowledge",
+      "difficulty": "Easy",
+      "duration": "20 min",
+      "xp_reward": 30,
+      "is_active": true,
+      "created_at": "2026-09-13T00:57:07.902Z"
+    },
+    "q-1789261027904-2jlp21": {
+      "id": "q-1789261027904-2jlp21",
+      "user_id": "demo-user-123",
+      "title": "Evening Reflection & Gratitude Journal",
+      "description": "Reflect on the day, write down 3 victories and 1 key lesson learned.",
+      "category": "Mind",
+      "difficulty": "Easy",
+      "duration": "15 min",
+      "xp_reward": 35,
+      "is_active": true,
+      "created_at": "2026-09-13T00:57:07.904Z"
+    },
+    "q-1789261027906-w114br": {
+      "id": "q-1789261027906-w114br",
+      "user_id": "demo-user-123",
+      "title": "Box Breathing & Stress Reset",
+      "description": "4-4-4-4 box breathing cycles to lower heart rate and enter deep flow state.",
+      "category": "Mind",
+      "difficulty": "Easy",
+      "duration": "10 min",
+      "xp_reward": 25,
+      "is_active": true,
+      "created_at": "2026-09-13T00:57:07.906Z"
+    }
+  },
+  "quest_completions": [
+    {
+      "id": "comp-1",
+      "user_id": "demo-user-123",
+      "quest_id": "q-2",
+      "xp_awarded": 120,
+      "completed_at": "2026-09-11T17:03:09.543Z",
+      "completion_date": "2026-09-11"
+    }
+  ]
+}

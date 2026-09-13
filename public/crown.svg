@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <defs>
+    <linearGradient id="crownGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="40%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <linearGradient id="crownInner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FEF3C7" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#F59E0B" stop-opacity="0.7" />
+    </linearGradient>
+  </defs>
+  <!-- Crown Base & Spikes -->
+  <path d="M4 22L6.5 10L12 16L16 6L20 16L25.5 10L28 22H4Z" fill="url(#crownInner)" stroke="url(#crownGold)" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Crown Bottom Rim -->
+  <path d="M4 22H28V25C28 25.5 27.5 26 27 26H5C4.5 26 4 25.5 4 25V22Z" fill="url(#crownGold)"/>
+  <!-- Jewels on Spikes -->
+  <circle cx="6.5" cy="9.5" r="1.8" fill="#FDE68A" stroke="#B45309" stroke-width="0.8"/>
+  <circle cx="16" cy="5.5" r="2.2" fill="#60A5FA" stroke="#1D4ED8" stroke-width="0.8"/>
+  <circle cx="25.5" cy="9.5" r="1.8" fill="#FDE68A" stroke="#B45309" stroke-width="0.8"/>
+  <!-- Gems on Rim -->
+  <circle cx="9" cy="24" r="1" fill="#EF4444"/>
+  <circle cx="16" cy="24" r="1.2" fill="#3B82F6"/>
+  <circle cx="23" cy="24" r="1" fill="#10B981"/>
+</svg>
