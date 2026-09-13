@@ -216,6 +216,19 @@ export const AuthProvider = ({ children }) => {
 
     let email = cleanInput.toLowerCase();
 
+    // Helpful alias mappings for registered users
+    const EMAIL_ALIASES = {
+      'tarini@gmail.com': 'tariniprasadpati2023@gmail.com',
+      'tariniprasad@gmail.com': 'tariniprasadpati2023@gmail.com',
+      'tariniprasadpati@gmail.com': 'tariniprasadpati2023@gmail.com',
+      'ashika@gmail.com': 'ashikatoppo@gamail.com',
+      'ashikatoppo@gmail.com': 'ashikatoppo@gamail.com',
+      'jagannath@gmail.com': 'jagannath@123gmail.com'
+    };
+    if (EMAIL_ALIASES[email]) {
+      email = EMAIL_ALIASES[email];
+    }
+
     if (isSupabaseConfigured && supabase) {
       // If user typed a username without @, resolve to their email address
       if (!email.includes('@')) {
@@ -271,7 +284,7 @@ export const AuthProvider = ({ children }) => {
           throw new Error('Please verify your email or click Login again.');
         }
         if (error.message.includes('Invalid login credentials')) {
-          throw new Error('Invalid email or password. Please check your credentials or use 1-Click Guest Pass.');
+          throw new Error('Invalid email or password. Please verify your credentials or click "Forgot password?" to reset it.');
         }
         throw error;
       }

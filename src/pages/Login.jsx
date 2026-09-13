@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, AlertCircle, KeyRound, X, CheckCircle2, Volume2, VolumeX, Sparkles } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, AlertCircle, KeyRound, X, CheckCircle2, Volume2, VolumeX } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useGame } from '../context/GameContext';
 import { soundFx } from '../lib/soundEffects';
@@ -8,7 +8,7 @@ import { LoginCharacter } from '../components/LoginCharacter';
 import { SEOHead } from '../components/SEOHead';
 
 export const Login = () => {
-  const { signIn, resetPassword, loginGuest } = useAuth();
+  const { signIn, resetPassword } = useAuth();
   const { soundMuted, toggleSound } = useGame();
   const navigate = useNavigate();
 
@@ -17,7 +17,6 @@ export const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [guestLoading, setGuestLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Forgot password modal state
@@ -47,20 +46,6 @@ export const Login = () => {
       setError(err.message || 'Authentication sequence failed.');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleGuestLogin = async () => {
-    setGuestLoading(true);
-    setError(null);
-    try {
-      soundFx.playClick();
-      await loginGuest();
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.message || 'Guest access sequence failed.');
-    } finally {
-      setGuestLoading(false);
     }
   };
 
@@ -132,8 +117,8 @@ export const Login = () => {
       {/* Main Staging Wrapper: Animated Character + Split Login Card */}
       <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-8 w-full max-w-5xl z-10 relative">
         
-        {/* Animated RPG Character Companion (Visible on Desktop / Large screens) */}
-        <div className="hidden lg:flex items-center justify-center shrink-0">
+        {/* Animated RPG Character Companion Walking in from the Side */}
+        <div className="flex items-center justify-center shrink-0">
           <LoginCharacter />
         </div>
 
@@ -291,32 +276,13 @@ export const Login = () => {
               </div>
 
               {/* 5. Login Button (Staggered Entrance Pop) */}
-              <div className="animate-login-btn pt-1 space-y-2.5">
+              <div className="animate-login-btn pt-1">
                 <button
                   type="submit"
                   disabled={loading}
                   className="w-full py-3 rounded-xl font-heading font-bold text-sm text-white bg-gradient-to-r from-[#2b59ff] via-[#4f46e5] to-[#7c3aed] hover:from-blue-600 hover:to-purple-600 shadow-[0_4px_18px_rgba(43,89,255,0.4)] hover:shadow-[0_6px_24px_rgba(43,89,255,0.6)] transition-all transform hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 cursor-pointer"
                 >
                   {loading ? 'Entering realm...' : 'Login'}
-                </button>
-
-                {/* Instant 1-Click Demo / Guest Pass */}
-                <div className="relative flex items-center justify-center py-1">
-                  <div className="border-t border-white/10 w-full" />
-                  <span className="bg-[#0e1424] px-2.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 shrink-0">
-                    or explore now
-                  </span>
-                  <div className="border-t border-white/10 w-full" />
-                </div>
-
-                <button
-                  type="button"
-                  onClick={handleGuestLogin}
-                  disabled={guestLoading || loading}
-                  className="w-full py-2.5 rounded-xl font-heading font-semibold text-xs text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 hover:border-amber-400/50 shadow-[0_2px_12px_rgba(245,158,11,0.15)] transition-all transform hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 cursor-pointer flex items-center justify-center gap-2"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{guestLoading ? 'Summoning Demo Hero...' : '1-Click Guest Login / Demo Hero'}</span>
                 </button>
               </div>
 
