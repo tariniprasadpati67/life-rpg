@@ -53,13 +53,13 @@ export const Navbar = () => {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-white/10 bg-[#070b14]/85 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-2.5 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-2">
         
         {/* Brand Logo with Crown */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 rounded-xl border border-[#1a233a] text-slate-300 hover:text-white"
+            className="md:hidden p-1.5 sm:p-2 rounded-xl border border-[#1a233a] text-slate-300 hover:text-white shrink-0"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -68,29 +68,29 @@ export const Navbar = () => {
           <Link 
             to={user ? "/dashboard" : "/login"} 
             onClick={handleNavClick}
-            className="flex items-center gap-2.5 group focus:outline-none"
+            className="flex items-center gap-1.5 sm:gap-2.5 group focus:outline-none shrink-0"
             aria-label="Life RPG"
           >
             <img 
               src="/app-logo.png" 
               alt="Life RPG Logo" 
-              className="w-8 h-8 object-contain drop-shadow-[0_0_12px_rgba(245,158,11,0.75)] group-hover:scale-105 transition-transform" 
+              className="w-7 h-7 sm:w-8 sm:h-8 object-contain drop-shadow-[0_0_12px_rgba(245,158,11,0.75)] group-hover:scale-105 transition-transform shrink-0" 
             />
-            <span className="font-heading font-black text-lg sm:text-xl text-white tracking-wide">
+            <span className="font-heading font-black text-sm sm:text-xl text-white tracking-wide whitespace-nowrap hidden min-[360px]:inline">
               LIFE <span className="text-blue-400">RPG</span>
             </span>
           </Link>
         </div>
 
         {/* Right Status Capsule: Streak, Gold, Diamonds, Notifications, Avatar */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           
           {user && (
             <>
               {/* Streak Pill with Equipped Flame & Shield styling */}
               <Link
                 to="/streak"
-                className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#141b2e] text-xs font-semibold transition-all ${
+                className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#141b2e] text-xs font-semibold transition-all shrink-0 ${
                   isHyperFlame 
                     ? 'border border-cyan-500/40 text-cyan-300 shadow-[0_0_14px_rgba(6,182,212,0.35)] hover:border-cyan-400' 
                     : isInfernoFlame
@@ -112,20 +112,20 @@ export const Navbar = () => {
               {/* Gold Pill */}
               <Link
                 to="/shop"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#141b2e] border border-amber-500/30 text-amber-300 text-xs font-bold hover:border-amber-400/60 transition-colors"
+                className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#141b2e] border border-amber-500/30 text-amber-300 text-[11px] sm:text-xs font-bold hover:border-amber-400/60 transition-colors shrink-0"
                 title="Gold Balance"
               >
-                <span className="text-amber-400">🪙</span>
+                <span className="text-amber-400 text-xs sm:text-sm">🪙</span>
                 <span>{profile?.gold ?? 850}</span>
               </Link>
 
               {/* Diamonds Pill */}
               <Link
                 to="/shop"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#141b2e] border border-cyan-500/30 text-cyan-300 text-xs font-bold hover:border-cyan-400/60 transition-colors"
+                className="flex items-center gap-1 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-[#141b2e] border border-cyan-500/30 text-cyan-300 text-[11px] sm:text-xs font-bold hover:border-cyan-400/60 transition-colors shrink-0"
                 title="Diamonds Balance"
               >
-                <span className="text-cyan-400">💎</span>
+                <span className="text-cyan-400 text-xs sm:text-sm">💎</span>
                 <span>{profile?.diamonds ?? 40}</span>
               </Link>
 
@@ -134,10 +134,10 @@ export const Navbar = () => {
             </>
           )}
 
-          {/* Sound Synthesizer Toggle */}
+          {/* Sound Synthesizer Toggle (Desktop/Tablet - on mobile accessible in drawer) */}
           <button
             onClick={toggleSound}
-            className="p-2 rounded-xl border border-[#1a233a] bg-[#141b2e] text-slate-400 hover:text-blue-400 transition-all"
+            className="hidden sm:flex p-2 rounded-xl border border-[#1a233a] bg-[#141b2e] text-slate-400 hover:text-blue-400 transition-all shrink-0"
             aria-label={soundMuted ? "Unmute sound effects" : "Mute sound effects"}
             title={soundMuted ? "Audio Muted" : "SFX Active"}
           >
@@ -291,7 +291,30 @@ export const Navbar = () => {
                   <span>Settings</span>
                 </Link>
 
-                <div className="pt-2 border-t border-white/10">
+                <div className="pt-2 border-t border-white/10 flex items-center justify-between px-3.5 py-2">
+                  <span className="text-xs font-semibold text-slate-400">Game Audio / SFX</span>
+                  <button
+                    onClick={() => {
+                      soundFx.playClick();
+                      toggleSound();
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-white/10 bg-[#141b2e] text-xs font-semibold text-slate-200"
+                  >
+                    {soundMuted ? (
+                      <>
+                        <VolumeX className="w-3.5 h-3.5 text-rose-400" />
+                        <span className="text-rose-300">Muted</span>
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 className="w-3.5 h-3.5 text-blue-400" />
+                        <span className="text-blue-300">Active</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <div className="pt-1 border-t border-white/10">
                   <button
                     onClick={handleLogout}
                     className="w-full min-h-[44px] text-left px-3.5 py-2.5 rounded-xl text-rose-400 hover:bg-rose-500/10 flex items-center gap-3 transition-colors"

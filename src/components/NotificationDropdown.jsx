@@ -165,7 +165,7 @@ export const NotificationDropdown = () => {
       {/* Trigger Bell Button matching Navbar design */}
       <button
         onClick={handleToggle}
-        className={`relative p-2 rounded-xl transition-all focus:outline-none ${
+        className={`relative p-1.5 sm:p-2 rounded-xl transition-all focus:outline-none shrink-0 ${
           isOpen 
             ? 'bg-[#1a243c] border-blue-500 text-white shadow-[0_0_15px_rgba(59,130,246,0.3)]' 
             : 'bg-[#141b2e] border border-[#1a233a] text-slate-400 hover:text-white hover:border-slate-700'

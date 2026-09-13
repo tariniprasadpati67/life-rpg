@@ -114,7 +114,7 @@ export const ProfileDropdown = () => {
         {/* Clickable Profile Pill */}
         <button
           onClick={handleToggle}
-          className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-[#111625] hover:bg-[#161d30] border border-[#1e263d] hover:border-purple-500/50 transition-all focus:outline-none cursor-pointer group shadow-sm active:scale-95"
+          className="flex items-center gap-1.5 sm:gap-2.5 p-1 sm:px-3 sm:py-1.5 rounded-xl bg-[#111625] hover:bg-[#161d30] border border-[#1e263d] hover:border-purple-500/50 transition-all focus:outline-none cursor-pointer group shadow-sm active:scale-95 shrink-0"
           aria-label="User menu"
           aria-expanded={isOpen}
         >
@@ -131,12 +131,12 @@ export const ProfileDropdown = () => {
             <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-400 border border-[#111625] z-30" />
           </div>
 
-          <span className="text-xs font-semibold text-white max-w-[120px] truncate text-left">
+          <span className="hidden md:inline text-xs font-semibold text-white max-w-[120px] truncate text-left">
             {displayName}
           </span>
 
           <ChevronDown 
-            className={`w-3.5 h-3.5 text-slate-400 group-hover:text-purple-300 transition-transform duration-200 ${
+            className={`hidden md:inline w-3.5 h-3.5 text-slate-400 group-hover:text-purple-300 transition-transform duration-200 ${
               isOpen ? 'rotate-180 text-purple-400' : ''
             }`} 
           />
