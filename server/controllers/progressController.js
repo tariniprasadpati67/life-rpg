@@ -492,7 +492,7 @@ export const getLeaderboard = async (req, res) => {
 
   // 1. Instant Cache Hit: Serve fresh cached leaderboard in <5ms
   const cached = leaderboardCache[period];
-  if (!forceRefresh && cached?.data && (Date.now() - cached.timestamp < LEADERBOARD_CACHE_TTL)) {
+  if (!forceRefresh && cached?.data && cached.data.length >= 2 && (Date.now() - cached.timestamp < LEADERBOARD_CACHE_TTL)) {
     const personalized = cached.data.map(p => ({
       ...p,
       isYou: p.id === currentUserId
@@ -507,34 +507,69 @@ export const getLeaderboard = async (req, res) => {
   }
 
   try {
-    if (isSupabaseConfigured) {
+    if (isSupabaseConfigured && supabase) {
       const now = new Date();
       const daysBack = period === 'Weekly' ? 7 : 30;
       const startDate = new Date(now.getTime() - daysBack * 86400000).toISOString().split('T')[0];
 
-      // Run profile query and quest completions query concurrently in PARALLEL with a fast 2.5s timeout
-      const fetchWithTimeout = (promise, ms = 2500) =>
+      // Run queries with generous 12s timeout for cold starts
+      const fetchWithTimeout = (promise, ms = 12000) =>
         Promise.race([
           promise,
           new Promise((_, reject) => setTimeout(() => reject(new Error('Supabase network timeout')), ms))
         ]);
 
-      const [profilesRes, completionsRes] = await fetchWithTimeout(
+      const [profilesRes, completionsRes, authUsersRes] = await fetchWithTimeout(
         Promise.all([
-          supabase
-            .from('profiles')
-            .select('id, username, display_name, avatar_url, current_xp, current_level, current_streak, created_at'),
-          supabase
-            .from('quest_completions')
-            .select('user_id, xp_awarded')
-            .gte('completion_date', startDate)
+          Promise.resolve(
+            supabase
+              .from('profiles')
+              .select('id, username, display_name, avatar_url, current_xp, current_level, current_streak, created_at')
+          ).catch(() => ({ data: [] })),
+          Promise.resolve(
+            supabase
+              .from('quest_completions')
+              .select('user_id, xp_awarded')
+              .gte('completion_date', startDate)
+          ).catch(() => ({ data: [] })),
+          Promise.resolve(supabase.auth.admin.listUsers()).catch(() => ({ data: { users: [] } }))
         ])
       );
 
-      if (profilesRes.error) throw profilesRes.error;
+      const dbProfiles = profilesRes?.data || [];
+      const authUsers = authUsersRes?.data?.users || [];
+      const completions = completionsRes?.data || [];
+
+      // Map profiles by ID
+      const profileMap = new Map();
+      dbProfiles.forEach(p => {
+        if (p?.id) profileMap.set(p.id, p);
+      });
+
+      // Merge any registered auth users who don't have a profile row yet
+      for (const u of authUsers) {
+        if (!profileMap.has(u.id)) {
+          const uName = u.user_metadata?.username || u.email?.split('@')[0] || 'Adventurer';
+          const dName = u.user_metadata?.display_name || uName;
+          const newProf = {
+            id: u.id,
+            username: uName,
+            display_name: dName,
+            avatar_url: null,
+            current_xp: 0,
+            current_level: 1,
+            current_streak: 0,
+            created_at: u.created_at
+          };
+          profileMap.set(u.id, newProf);
+
+          // Silently upsert to database
+          supabase.from('profiles').insert(newProf).catch(() => {});
+        }
+      }
 
       // Strictly filter out any automated test or fake accounts
-      const profileList = (profilesRes.data || []).filter(p => {
+      const profileList = Array.from(profileMap.values()).filter(p => {
         const u = (p.username || '').toLowerCase();
         const d = (p.display_name || '').toLowerCase();
         if (u.startsWith('test') || d.startsWith('test')) return false;
@@ -545,7 +580,7 @@ export const getLeaderboard = async (req, res) => {
 
       // Aggregate XP per user for the period
       const periodXpMap = {};
-      (completionsRes.data || []).forEach(c => {
+      completions.forEach(c => {
         periodXpMap[c.user_id] = (periodXpMap[c.user_id] || 0) + (c.xp_awarded || 0);
       });
 
@@ -567,10 +602,11 @@ export const getLeaderboard = async (req, res) => {
         };
       });
 
-      // Sort descending by XP, then level
+      // Sort descending by XP, then level, then totalXp
       rankedPlayers.sort((a, b) => {
         if (b.xp !== a.xp) return b.xp - a.xp;
-        return b.level - a.level;
+        if ((b.level || 1) !== (a.level || 1)) return (b.level || 1) - (a.level || 1);
+        return (b.totalXp || 0) - (a.totalXp || 0);
       });
 
       // Assign ranks and medals

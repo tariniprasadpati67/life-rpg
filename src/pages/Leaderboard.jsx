@@ -5,6 +5,7 @@ import { useGame } from '../context/GameContext';
 import { Sidebar } from '../components/Sidebar';
 import { soundFx } from '../lib/soundEffects';
 import { SEOHead } from '../components/SEOHead';
+import { resilientFetch } from '../lib/api';
 
 export const Leaderboard = () => {
   const { user, token } = useAuth();
@@ -40,7 +41,7 @@ export const Leaderboard = () => {
     try {
       const activeToken = token || localStorage.getItem('rpg_auth_token');
       const forceParam = isManualRefresh ? '&force=true' : '';
-      const res = await fetch(`/api/progress/leaderboard?period=${period}${forceParam}`, {
+      const res = await resilientFetch(`/api/progress/leaderboard?period=${period}${forceParam}`, {
         headers: {
           ...(activeToken ? { 'Authorization': `Bearer ${activeToken}` } : {})
         }
@@ -61,7 +62,7 @@ export const Leaderboard = () => {
         setRankings(normalized);
       }
     } catch (err) {
-      console.error('Failed to fetch real leaderboard:', err);
+      console.warn('Leaderboard fetch notice:', err);
     } finally {
       setLoading(false);
       setRefreshing(false);
